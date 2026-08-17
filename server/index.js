@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const mysql = require('mysql');
 const cors = require('cors');
+const authRoutes = require("./routes/authRoutes");
 
 app.use(cors());
 app.use(express.json())
@@ -12,6 +13,8 @@ const db = mysql.createConnection({
     password: "",
     database: "employeeSystem"
 });
+
+app.use("/api/auth", authRoutes);
 
 app.get('/employees', (req, res) => {
     db.query("SELECT * FROM employees", (err, result) => {

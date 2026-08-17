@@ -1,5 +1,6 @@
 import Axios from "axios";
 import { useState } from "react";
+import Auth from "./Auth";
 
 function App() {
   const [name, setName] = useState("");
@@ -18,6 +19,17 @@ function App() {
   const [newWage, setNewWage] = useState(0);
 
   const [employeeList, setEmployeeList] = useState([]);
+
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+
+  if (!isLoggedIn) {
+    return <Auth onLogin={() => setIsLoggedIn(true)} />;
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.reload();
+  };
 
   const getEmployees = () => {
     Axios.get("http://localhost:3001/employees").then((response) => {
@@ -99,7 +111,7 @@ function App() {
       (response) => {
         setEmployeeList(
           employeeList.map((val) => {
-            return val.id == id
+            return val.id === id
               ? {
                   id: val.id,
                   name: val.name,
@@ -119,7 +131,7 @@ function App() {
     Axios.delete(`http://localhost:3001/delete/${id}`).then((response) => {
       setEmployeeList(
         employeeList.filter((val) => {
-          return val.id != id;
+          return val.id !== id;
         }),
       );
     });
@@ -138,6 +150,7 @@ function App() {
   return (
     <div className="App container">
       <h1>Employee information</h1>
+      <button onClick={handleLogout}>Logout</button>
       <div className="information">
         <form action="">
           <div className="mb-3">
@@ -385,7 +398,7 @@ function App() {
                 <p className="card-text">MaritalStatus: {val.maritalStatus}</p>
                 <div className="d-flex">
                   <input
-                    type="text"
+                    //type="text"
                     type="number"
                     style={{ width: "300px" }}
                     placeholder="15000..."
