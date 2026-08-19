@@ -1,5 +1,5 @@
 import Axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Auth from "./Auth";
 import Sidebar from "./Sidebar";
 
@@ -24,6 +24,22 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
 
   const [page, setPage] = useState("crud");
+
+  const [profile, setProfile] = useState({
+    username: "",
+    email: "",
+    firstName: "",
+    lastName: "",
+  });
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+
+  useEffect(() => {
+    if (page === "Profile") {
+      getProfile();
+    }
+  }, [page]);
 
   if (!isLoggedIn) {
     return <Auth onLogin={() => setIsLoggedIn(true)} />;
@@ -148,6 +164,50 @@ function App() {
     } else {
       setWorkingDays(workingDays.filter((day) => day !== value));
     }
+  };
+
+  const getProfile = () => {
+    const token = localStorage.getItem("token");
+
+    Axios.get("http://localhost:3001/api/auth/profile", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        setProfile(response.data);
+
+        setFirstName(response.data.firstName || "");
+        setLastName(response.data.lastName || "");
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const updateProfile = () => {
+    const token = localStorage.getItem("token");
+
+    Axios.put(
+      "http://localhost:3001/api/auth/profile",
+      {
+        firstName: firstName,
+        lastName: lastName,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    )
+      .then((response) => {
+        alert("Profile updated successfully");
+
+        getProfile();
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   return (
@@ -494,10 +554,65 @@ function App() {
           </div>
         )}
 
-        {page === "test1" && (
-          <div>
-            <h1>TEST1</h1>
-            <p>Test 1 Page</p>
+        {page === "Profile" && (
+          <div className="container">
+            <h1>Profile</h1>
+
+            <hr />
+
+            <div className="mb-3">
+              <label className="form-label">Username:</label>
+
+              <input
+                type="text"
+                className="form-control"
+                value={profile.username}
+                disabled
+              />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Email:</label>
+
+              <input
+                type="email"
+                className="form-control"
+                value={profile.email}
+                disabled
+              />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">ชื่อ:</label>
+
+              <input
+                type="text"
+                className="form-control"
+                value={firstName}
+                placeholder="กรอกชื่อ"
+                onChange={(event) => {
+                  setFirstName(event.target.value);
+                }}
+              />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">สกุล:</label>
+
+              <input
+                type="text"
+                className="form-control"
+                value={lastName}
+                placeholder="กรอกนามสกุล"
+                onChange={(event) => {
+                  setLastName(event.target.value);
+                }}
+              />
+            </div>
+
+            <button className="btn btn-primary" onClick={updateProfile}>
+              Save Profile
+            </button>
           </div>
         )}
 
